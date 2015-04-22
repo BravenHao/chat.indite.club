@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<input value="weihongjie" id="name">
+<input type="button" value="设置" onclick="setName()">
+<br>1选择你要聊天的对象
+<select id="userList">
+
+</select>
+
+<div id="message" style="width: 300px;height: 200px;overflow: scroll">
+
+</div>
+<textarea id="content">
+
+</textarea>
+<input type="button" id="send" value="发送">
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    function setName() {
+        socket.emit('setName', {name: document.getElementById('name').value});
+    }
+    var socket = io('http://192.168.63.200:55555');
+    socket.on('connect', function () {
+        console.log('设置name');
+
+    });
+    socket.on('userList', function (data) {
+        console.log(data);
+        for (var i = 0; i < data.userList.length; i++) {
+            var option = document.createElement('option');
+            option.text = data.userList[i].name;
+            option.id = data.userList[i].socketId;
+            option.value = data.userList[i].socketId;
+            document.getElementById("userList").add(option);
+        }
+
+    });
+    socket.on('OnMessage', function (data) {
+        document.getElementById('message').innerHTML = document.getElementById('message').innerHTML + "<br>" + data;
+
+    });
+    window.onload = function () {
+        document.getElementById('send').onclick = function () {
+
+            var value = document.getElementById('content').value;
+            socket.emit('sendMessage', {user: document.getElementById('userList').value, content: value});
+            document.getElementById('content').value = "";
+            document.getElementById('message').innerHTML = "我对"+document.getElementById('userList').value+"说：" + document.getElementById('message').innerHTML + "<br>" + value;
+        }
+    }
+</script>
+</body>
+</html>
